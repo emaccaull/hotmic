@@ -1,3 +1,5 @@
 <resources>
   <string name="app_name">Hot Mic</string>
+  <string name="audio_feature_low_latency">Has low latency audio (sub 45ms)? %b</string>
+  <string name="audio_feature_pro">Has pro audio latency (sub 20ms)? %b</string>
 </resources>
