@@ -10,6 +10,9 @@
 # Java class files
 *.class
 
+# Android Game Development Kit (AGDK)
+agdk-libraries-*/
+
 # Generated files
 bin/
 gen/
