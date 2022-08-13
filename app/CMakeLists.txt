@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(HotMic)
 
-find_package(oboe REQUIRED CONFIG)
-
 add_library(
-    audiolib
-    # Need a .so to link to JVM at runtime.
-    SHARED
-    src/main/cpp/audio-engine.h src/main/cpp/audio-engine.cc
+        audiongn
+        # Need a .so to link to JVM at runtime.
+        SHARED
+        src/main/cpp/audio-engine.h src/main/cpp/audio-engine.cc
+        src/main/cpp/jni-bridge.cc
+        src/main/cpp/logging_macros.h
 )
 
-target_link_libraries(audiolib oboe OpenSLES)
+find_package(oboe REQUIRED CONFIG)
 
+# Audio Engine
 include_directories(src/main/cpp/include/)
+target_link_libraries(audiongn log oboe::oboe)
