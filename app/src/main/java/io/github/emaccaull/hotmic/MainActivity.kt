@@ -1,15 +1,24 @@
 package io.github.emaccaull.hotmic
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import io.github.emaccaull.hotmic.databinding.ActivityMainBinding
+
+private const val TAG = "HotMic"
 
 class MainActivity : AppCompatActivity() {
     private val binding: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
+
+    private lateinit var audioManager: AudioManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +43,21 @@ class MainActivity : AppCompatActivity() {
             )
 //            }
         }
+
+
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.registerAudioDeviceCallback(object : AudioDeviceCallback() {
+            override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
+                val audioDevices =
+                    addedDevices.map { AudioDevice(it.id, it.friendlyName, it.isSource) }
+                Log.i(TAG, "Devices added: $audioDevices")
+            }
+
+            override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
+                Log.i(TAG, "Devices removed: $removedDevices")
+            }
+        }, null)
+
 
         AudioEngine.getInstance().start()
     }
