@@ -1,28 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/audio_source_title_text"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:paddingStart="0dp"
+        android:paddingEnd="4dp"
+        android:text="@string/audio_source_title"
+        app:layout_constraintEnd_toStartOf="@+id/center_guideline"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/audio_device_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:orientation="vertical">
+        android:layout_marginTop="8dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/audio_source_title_text"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/text_low_latency"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="@string/audio_feature_low_latency" />
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/center_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3" />
 
-        <TextView
-            android:id="@+id/text_pro_audio"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="@string/audio_feature_pro" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/bpm_text"
+        style="@style/TextAppearance.Material3.DisplayLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/bpm_uninitialized"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-</RelativeLayout>
+    <Button
+        android:id="@+id/record_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/record_start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
