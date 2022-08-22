@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         logFeatures()
 
+        binding.audioDeviceSpinner.isEnabled = !AudioEngine.getInstance().isRecording
+
         binding.recordButton.setOnClickListener {
             binding.recordButton.text =
                 if (AudioEngine.getInstance().isRecording) {
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                     AudioEngine.getInstance().startRecording()
                     getString(R.string.record_stop)
                 }
+            binding.audioDeviceSpinner.isEnabled = !AudioEngine.getInstance().isRecording
         }
 
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
