@@ -3,7 +3,7 @@ package io.github.emaccaull.hotmic;
 import android.content.Context;
 import android.media.AudioManager;
 
-public class AudioEngine {
+public class AudioEngine implements AutoCloseable {
     static {
         System.loadLibrary("audiongn");
     }
@@ -26,6 +26,7 @@ public class AudioEngine {
                 instance = INSTANCE;
                 if (instance == null) {
                     INSTANCE = instance = new AudioEngine(context);
+                    INSTANCE.setup();
                 }
             }
         }
@@ -40,9 +41,23 @@ public class AudioEngine {
         return instance;
     }
 
-    public native boolean start();
+    @Override
+    public void close() {
+        synchronized (AudioEngine.class) {
+            shutdown();
+            INSTANCE = null;
+        }
+    }
 
-    public native boolean shutdown();
+    public native boolean startRecording();
+    public native boolean stopRecording();
+    public native boolean isRecording();
+
+    public native boolean setRecordingDeviceId(int recordingDeviceId);
+
+    private native boolean setup();
+
+    private native boolean shutdown();
 
     private static native void setDefaultStreamParameters(int defaultSampleRate, int defaultFramesPerBurst);
 }

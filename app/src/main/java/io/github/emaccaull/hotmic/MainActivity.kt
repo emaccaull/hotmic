@@ -3,6 +3,8 @@ package io.github.emaccaull.hotmic
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import io.github.emaccaull.hotmic.databinding.ActivityMainBinding
@@ -14,17 +16,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var viewModel: MainViewModel
-    private var fakeRecordState = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AudioEngine.initialize(this)
+
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         logFeatures()
 
         binding.recordButton.setOnClickListener {
-            fakeRecordState = !fakeRecordState
             binding.recordButton.text =
-                if (fakeRecordState) getString(R.string.record_stop) else getString(R.string.record_start)
+                if (AudioEngine.getInstance().isRecording) {
+                    AudioEngine.getInstance().stopRecording()
+                    getString(R.string.record_start)
+                } else {
+                    AudioEngine.getInstance().startRecording()
+                    getString(R.string.record_stop)
+                }
         }
 
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -37,6 +45,22 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = AudioDeviceArrayAdapter(this)
         binding.audioDeviceSpinner.adapter = adapter
+        binding.audioDeviceSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val device = binding.audioDeviceSpinner.selectedItem as AudioDevice
+                Timber.d("Selected audio input %s", device.name)
+                AudioEngine.getInstance().setRecordingDeviceId(device.id)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Nothing to do
+            }
+        }
 
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         viewModel.getAudioDevices(AudioSourceFilter.INPUT).observe(this) { devices ->
@@ -45,14 +69,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        AudioEngine.getInstance().start()
-    }
-
-    override fun onPause() {
-        AudioEngine.getInstance().shutdown()
-        super.onPause()
+    override fun onDestroy() {
+        AudioEngine.getInstance().close()
+        super.onDestroy()
     }
 
     private fun logFeatures() {
