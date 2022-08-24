@@ -13,7 +13,7 @@ public:
 
     void SetRecordingDeviceId(int device_id);
 
-    void StartRecording();
+    bool StartRecording();
 
     void StopRecording();
 
@@ -30,8 +30,25 @@ public:
     void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
 
 private:
+    static constexpr oboe::AudioFormat kAudioFormat = oboe::AudioFormat::Float;
+    static constexpr int32_t kPreferredSampleRateHz = 44100;
+
+    /// Record mono. Stereo isn't required for the analysis.
+    const int32_t input_channel_count_ = oboe::ChannelCount::Mono;
     int32_t recording_device_ = oboe::kUnspecified;
     bool recording_ = false;
+
+    std::shared_ptr<oboe::AudioStream> input_stream_;
+
+    oboe::AudioStreamBuilder *
+    SetupRecordingStreamParameters(oboe::AudioStreamBuilder *builder) const;
+
+    static oboe::AudioStreamBuilder *SetupCommonStreamParameters(oboe::AudioStreamBuilder *builder);
+
+    static void CloseStream(std::shared_ptr<oboe::AudioStream> &stream);
+
+    static void WarnIfNotLowLatency(std::shared_ptr<oboe::AudioStream> &stream);
+
 };
 
 #endif //HOT_MIC_AUDIO_ENGINE_H

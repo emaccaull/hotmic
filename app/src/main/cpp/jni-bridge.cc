@@ -23,20 +23,19 @@ JNIEXPORT jboolean JNICALL
 Java_io_github_emaccaull_hotmic_AudioEngine_startRecording(JNIEnv *env, jobject) {
     if (engine == nullptr) {
         LOGE(
-                "Engine is null, you must call createEngine before calling this "
-                "method");
+            "Engine is null, you must call createEngine before calling this "
+            "method");
         return JNI_FALSE;
     }
-    engine->StartRecording();
-    return JNI_TRUE;
+    return engine->StartRecording();
 }
 
 JNIEXPORT jboolean JNICALL
 Java_io_github_emaccaull_hotmic_AudioEngine_stopRecording(JNIEnv *env, jobject) {
     if (engine == nullptr) {
         LOGE(
-                "Engine is null, you must call createEngine before calling this "
-                "method");
+            "Engine is null, you must call createEngine before calling this "
+            "method");
         return JNI_FALSE;
     }
     engine->StopRecording();
@@ -47,11 +46,11 @@ JNIEXPORT jboolean JNICALL
 Java_io_github_emaccaull_hotmic_AudioEngine_isRecording(JNIEnv *env, jobject) {
     if (engine == nullptr) {
         LOGE(
-                "Engine is null, you must call createEngine before calling this "
-                "method");
+            "Engine is null, you must call createEngine before calling this "
+            "method");
         return JNI_FALSE;
     }
-    return engine->IsRecording() ? JNI_TRUE : JNI_FALSE;
+    return engine->IsRecording();
 }
 
 JNIEXPORT jboolean JNICALL
@@ -67,8 +66,8 @@ Java_io_github_emaccaull_hotmic_AudioEngine_setRecordingDeviceId(JNIEnv *env, jo
                                                                  int device_id) {
     if (engine == nullptr) {
         LOGE(
-                "Engine is null, you must call createEngine before calling this "
-                "method");
+            "Engine is null, you must call createEngine before calling this "
+            "method");
         return JNI_FALSE;
     }
     engine->SetRecordingDeviceId(device_id);
