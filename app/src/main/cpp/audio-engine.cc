@@ -17,7 +17,10 @@ void AudioEngine::SetRecordingDeviceId(int device_id) {
 }
 
 bool AudioEngine::StartRecording() {
-  recording_ = true;
+  if (recording_) {
+    LOGW("Already recording");
+    return true;
+  }
   // Open the stream and start recording.
   oboe::AudioStreamBuilder in_builder;
   SetupRecordingStreamParameters(&in_builder);
@@ -30,12 +33,14 @@ bool AudioEngine::StartRecording() {
 //    // Determine maximum size that could possibly be called.
 //    int32_t bufferSize = input_stream_->getBufferCapacityInFrames()
 //                         * input_stream_->getChannelCount();
-  return input_stream_->requestStart() == oboe::Result::OK;
+  return (recording_ = input_stream_->requestStart() == oboe::Result::OK);
 }
 
 void AudioEngine::StopRecording() {
-  recording_ = false;
-  CloseStream(input_stream_);
+  if (recording_) {
+    recording_ = false;
+    CloseStream(input_stream_);
+  }
 }
 
 bool AudioEngine::IsRecording() const {
@@ -79,8 +84,7 @@ AudioEngine::SetupCommonStreamParameters(oboe::AudioStreamBuilder* builder) {
 
 /**
  * Close the stream. AudioStream::close() is a blocking call so the application does not need to add
- * synchronization between onAudioReady() function and the thread calling close(). [the closing
- * thread is the UI thread in this sample].
+ * synchronization between onAudioReady() function and the thread calling close().
  *
  * @param stream the stream to close
  */

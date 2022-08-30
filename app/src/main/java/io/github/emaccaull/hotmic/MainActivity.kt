@@ -27,15 +27,19 @@ class MainActivity : AppCompatActivity() {
         binding.audioDeviceSpinner.isEnabled = !AudioEngine.getInstance().isRecording
 
         binding.recordButton.setOnClickListener {
+            if (AudioEngine.getInstance().isRecording) {
+                AudioEngine.getInstance().stopRecording()
+            } else {
+                AudioEngine.getInstance().startRecording()
+            }
+            val recording = AudioEngine.getInstance().isRecording
             binding.recordButton.text =
-                if (AudioEngine.getInstance().isRecording) {
-                    AudioEngine.getInstance().stopRecording()
-                    getString(R.string.record_start)
-                } else {
-                    AudioEngine.getInstance().startRecording()
+                if (recording) {
                     getString(R.string.record_stop)
+                } else {
+                    getString(R.string.record_start)
                 }
-            binding.audioDeviceSpinner.isEnabled = !AudioEngine.getInstance().isRecording
+            binding.audioDeviceSpinner.isEnabled = !recording
         }
 
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
