@@ -55,9 +55,11 @@ bool AudioEngine::IsRecording() const {
  */
 oboe::AudioStreamBuilder*
 AudioEngine::SetupRecordingStreamParameters(oboe::AudioStreamBuilder* builder,
-                                            int32_t sample_rate) const {
+                                            int32_t sample_rate) {
   // This sample uses blocking read() because we don't specify a callback
-  builder->setDeviceId(recording_device_)
+  builder->setDataCallback(this)
+      ->setErrorCallback(this)
+      ->setDeviceId(recording_device_)
       ->setDirection(oboe::Direction::Input)
       ->setSampleRate(sample_rate)
       ->setChannelCount(input_channel_count_);
@@ -98,7 +100,7 @@ void AudioEngine::CloseStream(std::shared_ptr<oboe::AudioStream>& stream) {
     if (result != oboe::Result::OK) {
       LOGE("Error closing stream: %s", oboe::convertToText(result));
     } else {
-      LOGW("Successfully closed streams");
+      LOGI("Successfully closed streams");
     }
     stream.reset();
   }

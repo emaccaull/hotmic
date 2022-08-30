@@ -39,7 +39,7 @@ class AudioEngine: oboe::AudioStreamCallback {
 
   oboe::AudioStreamBuilder*
   SetupRecordingStreamParameters(oboe::AudioStreamBuilder* builder,
-                                 int32_t sample_rate = kPreferredSampleRateHz) const;
+                                 int32_t sample_rate = kPreferredSampleRateHz);
 
   static oboe::AudioStreamBuilder*
   SetupCommonStreamParameters(oboe::AudioStreamBuilder* builder);
