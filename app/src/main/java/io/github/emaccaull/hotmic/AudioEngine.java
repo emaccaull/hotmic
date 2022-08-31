@@ -3,6 +3,8 @@ package io.github.emaccaull.hotmic;
 import android.content.Context;
 import android.media.AudioManager;
 
+import androidx.annotation.WorkerThread;
+
 public class AudioEngine implements AutoCloseable {
     static {
         System.loadLibrary("audiongn");
@@ -50,8 +52,13 @@ public class AudioEngine implements AutoCloseable {
     }
 
     public native boolean startRecording();
+
     public native boolean stopRecording();
+
     public native boolean isRecording();
+
+    @WorkerThread
+    public native float nextMicLevel();
 
     public native boolean setRecordingDeviceId(int recordingDeviceId);
 

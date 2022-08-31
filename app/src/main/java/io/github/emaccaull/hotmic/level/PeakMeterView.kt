@@ -25,6 +25,7 @@ class PeakMeterView @JvmOverloads constructor(
     @FloatRange(from = RANGE_MIN.toDouble(), to = RANGE_MAX.toDouble())
     var level: Float = RANGE_MIN
         set(value) {
+            // TODO: smooth out fast updates (300 ms drop off)
             field = max(min(value, RANGE_MAX), RANGE_MIN)
             invalidate()
         }

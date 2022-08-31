@@ -5,6 +5,7 @@
 #ifndef HOT_MIC_AUDIO_ENGINE_H
 #define HOT_MIC_AUDIO_ENGINE_H
 
+#include "blocking-queue.h"
 #include <oboe/Oboe.h>
 
 class AudioEngine: oboe::AudioStreamCallback {
@@ -19,6 +20,8 @@ class AudioEngine: oboe::AudioStreamCallback {
 
   bool IsRecording() const;
 
+  float BlockingGetNextMicLevel();
+
   oboe::DataCallbackResult
   onAudioReady(oboe::AudioStream* oboeStream, void* audioData, int32_t numFrames) override;
 
@@ -29,6 +32,8 @@ class AudioEngine: oboe::AudioStreamCallback {
  private:
   static constexpr oboe::AudioFormat kAudioFormat = oboe::AudioFormat::Float;
   static constexpr int32_t kPreferredSampleRateHz = 44100;
+
+  BlockingQueue<float> mic_levels_{1024};
 
   /// Record mono. Stereo isn't required for the analysis.
   const int32_t input_channel_count_ = oboe::ChannelCount::Mono;

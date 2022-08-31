@@ -47,6 +47,12 @@ bool AudioEngine::IsRecording() const {
   return recording_;
 }
 
+float AudioEngine::BlockingGetNextMicLevel() {
+  float raw = mic_levels_.Poll();
+  // hack: assuming -32 to 3 range.
+  return ::fabsf(raw) * 35 - 32;
+}
+
 /**
  * Sets the stream parameters which are specific to recording.
  *
@@ -120,7 +126,15 @@ void AudioEngine::WarnIfNotLowLatency(std::shared_ptr<oboe::AudioStream>& stream
 }
 
 oboe::DataCallbackResult
-AudioEngine::onAudioReady(oboe::AudioStream* oboeStream, void* audioData, int32_t numFrames) {
+AudioEngine::onAudioReady(oboe::AudioStream*, void* audioData, int32_t numFrames) {
+  auto* data = reinterpret_cast<float*>(audioData);
+  auto* end = data + numFrames;
+  double avg = 0;
+  for (auto* p = data; p < end; p++) {
+    avg += *p;
+  }
+  avg /= numFrames;
+  mic_levels_.Push(float(avg));
   return oboe::DataCallbackResult::Continue;
 }
 

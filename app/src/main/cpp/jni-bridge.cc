@@ -11,7 +11,7 @@ AudioEngine* engine = nullptr;
 extern "C" {
 
 JNIEXPORT jboolean JNICALL
-Java_io_github_emaccaull_hotmic_AudioEngine_setup(JNIEnv* env, jobject) {
+Java_io_github_emaccaull_hotmic_AudioEngine_setup(JNIEnv*, jobject) {
   if (engine == nullptr) {
     engine = new AudioEngine();
   }
@@ -20,7 +20,7 @@ Java_io_github_emaccaull_hotmic_AudioEngine_setup(JNIEnv* env, jobject) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_io_github_emaccaull_hotmic_AudioEngine_startRecording(JNIEnv* env,
+Java_io_github_emaccaull_hotmic_AudioEngine_startRecording(JNIEnv*,
                                                            jobject) {
   if (engine == nullptr) {
     LOGE(
@@ -32,7 +32,7 @@ Java_io_github_emaccaull_hotmic_AudioEngine_startRecording(JNIEnv* env,
 }
 
 JNIEXPORT jboolean JNICALL
-Java_io_github_emaccaull_hotmic_AudioEngine_stopRecording(JNIEnv* env,
+Java_io_github_emaccaull_hotmic_AudioEngine_stopRecording(JNIEnv*,
                                                           jobject) {
   if (engine == nullptr) {
     LOGE(
@@ -45,7 +45,7 @@ Java_io_github_emaccaull_hotmic_AudioEngine_stopRecording(JNIEnv* env,
 }
 
 JNIEXPORT jboolean JNICALL
-Java_io_github_emaccaull_hotmic_AudioEngine_isRecording(JNIEnv* env, jobject) {
+Java_io_github_emaccaull_hotmic_AudioEngine_isRecording(JNIEnv*, jobject) {
   if (engine == nullptr) {
     LOGE(
         "Engine is null, you must call createEngine before calling this "
@@ -55,8 +55,19 @@ Java_io_github_emaccaull_hotmic_AudioEngine_isRecording(JNIEnv* env, jobject) {
   return engine->IsRecording();
 }
 
+JNIEXPORT jfloat JNICALL
+Java_io_github_emaccaull_hotmic_AudioEngine_nextMicLevel(JNIEnv*, jobject) {
+  if (engine == nullptr) {
+    LOGE(
+        "Engine is null, you must call createEngine before calling this "
+        "method");
+    return 0;
+  }
+  return engine->BlockingGetNextMicLevel();
+}
+
 JNIEXPORT jboolean JNICALL
-Java_io_github_emaccaull_hotmic_AudioEngine_shutdown(JNIEnv* env, jobject) {
+Java_io_github_emaccaull_hotmic_AudioEngine_shutdown(JNIEnv*, jobject) {
   delete engine;
   engine = nullptr;
   LOGI("AudioEngine stopped");
@@ -64,7 +75,7 @@ Java_io_github_emaccaull_hotmic_AudioEngine_shutdown(JNIEnv* env, jobject) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_io_github_emaccaull_hotmic_AudioEngine_setRecordingDeviceId(JNIEnv* env,
+Java_io_github_emaccaull_hotmic_AudioEngine_setRecordingDeviceId(JNIEnv*,
                                                                  jobject,
                                                                  int device_id) {
   if (engine == nullptr) {
@@ -78,8 +89,8 @@ Java_io_github_emaccaull_hotmic_AudioEngine_setRecordingDeviceId(JNIEnv* env,
 }
 
 JNIEXPORT void JNICALL
-Java_io_github_emaccaull_hotmic_AudioEngine_setDefaultStreamParameters(JNIEnv* env,
-                                                                       jclass type,
+Java_io_github_emaccaull_hotmic_AudioEngine_setDefaultStreamParameters(JNIEnv*,
+                                                                       jclass,
                                                                        jint sampleRate,
                                                                        jint framesPerBurst) {
   oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;

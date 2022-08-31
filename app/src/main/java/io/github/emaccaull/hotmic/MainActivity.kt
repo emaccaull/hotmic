@@ -7,7 +7,12 @@ import android.view.View
 import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import io.github.emaccaull.hotmic.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.isActive
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
@@ -74,6 +79,19 @@ class MainActivity : AppCompatActivity() {
             adapter.clear()
             adapter.addAll(devices)
         }
+
+        lifecycleScope.launchWhenCreated {
+            micLevels().collectLatest { level ->
+                binding.peakMeter.level = level
+            }
+        }
+    }
+
+    private fun micLevels(): Flow<Float> {
+        return flow {
+            while (currentCoroutineContext().isActive)
+                emit(AudioEngine.getInstance().nextMicLevel())
+        }.flowOn(Dispatchers.IO)
     }
 
     override fun onDestroy() {
