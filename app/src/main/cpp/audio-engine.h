@@ -33,6 +33,7 @@ class AudioEngine: oboe::AudioStreamCallback {
   static constexpr oboe::AudioFormat kAudioFormat = oboe::AudioFormat::Float;
   static constexpr int32_t kPreferredSampleRateHz = 44100;
 
+  // FIXME(emmanuel): can't use a blocking queue for realtime!
   BlockingQueue<float> mic_levels_{1024};
 
   /// Record mono. Stereo isn't required for the analysis.
