@@ -58,17 +58,6 @@ public class AudioEngine implements AutoCloseable {
     public native boolean isRecording();
 
     /**
-     * Blocks the current thread while waiting for the mic level in dBFS. The maximum value is 0.
-     *
-     * <p>Some general information about levels is available at
-     * <a href="https://ledgernote.com/columns/studio-recording/audio-clipping/">ledgernote.com</a>.
-     *
-     * @return mic level in dBFS (decibels full scale).
-     */
-    @WorkerThread
-    public native float nextMicLevel();
-
-    /**
      * Read the current level of the mic input in dBFS. Does not block.
      *
      * <p>Some general information about levels is available at

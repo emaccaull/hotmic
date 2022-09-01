@@ -55,11 +55,6 @@ bool AudioEngine::IsRecording() const {
   return recording_;
 }
 
-float AudioEngine::BlockingGetNextMicDbFS() {
-  float raw = recording_ ? mic_levels_.Poll() : 0.0f;
-  return AmplitudeToDbFS(raw);
-}
-
 float AudioEngine::CurrentMicDbFS() {
   return AmplitudeToDbFS(current_mic_level_);
 }
@@ -154,7 +149,6 @@ AudioEngine::onAudioReady(oboe::AudioStream*, void* audioData, int32_t numFrames
   avg /= numFrames;
 
   auto value = float(avg);
-  mic_levels_.Push(value);
   current_mic_level_ = value;
 
   return oboe::DataCallbackResult::Continue;
