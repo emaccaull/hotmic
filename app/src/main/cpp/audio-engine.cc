@@ -5,6 +5,13 @@
 #include "audio-engine.h"
 #include "logging_macros.h"
 #include <oboe/Oboe.h>
+#include <cmath>
+
+AudioEngine::AudioEngine() {
+  if (!current_mic_level_.is_lock_free()) {
+    LOGW("std::atomic is not lock free");
+  }
+}
 
 AudioEngine::~AudioEngine() {
   if (recording_) {
@@ -39,6 +46,7 @@ bool AudioEngine::StartRecording() {
 void AudioEngine::StopRecording() {
   if (recording_) {
     recording_ = false;
+    current_mic_level_ = 0;
     CloseStream(input_stream_);
   }
 }
@@ -47,10 +55,20 @@ bool AudioEngine::IsRecording() const {
   return recording_;
 }
 
-float AudioEngine::BlockingGetNextMicLevel() {
-  float raw = mic_levels_.Poll();
-  // hack: assuming -32 to 3 range.
-  return ::fabsf(raw) * 35 - 32;
+float AudioEngine::BlockingGetNextMicDbFS() {
+  float raw = recording_ ? mic_levels_.Poll() : 0.0f;
+  return AmplitudeToDbFS(raw);
+}
+
+float AudioEngine::CurrentMicDbFS() {
+  return AmplitudeToDbFS(current_mic_level_);
+}
+
+float AudioEngine::AmplitudeToDbFS(float amplitude) {
+  if (amplitude == 0.0f) { // avoid -infinity.
+    return -114.0f; // digital noise floor.
+  }
+  return 20.0f * ::log10(::fabsf(amplitude));
 }
 
 /**
@@ -134,7 +152,11 @@ AudioEngine::onAudioReady(oboe::AudioStream*, void* audioData, int32_t numFrames
     avg += *p;
   }
   avg /= numFrames;
-  mic_levels_.Push(float(avg));
+
+  auto value = float(avg);
+  mic_levels_.Push(value);
+  current_mic_level_ = value;
+
   return oboe::DataCallbackResult::Continue;
 }
 

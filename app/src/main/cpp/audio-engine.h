@@ -7,9 +7,11 @@
 
 #include "blocking-queue.h"
 #include <oboe/Oboe.h>
+#include <atomic>
 
 class AudioEngine: oboe::AudioStreamCallback {
  public:
+  AudioEngine();
   ~AudioEngine();
 
   void SetRecordingDeviceId(int device_id);
@@ -20,7 +22,9 @@ class AudioEngine: oboe::AudioStreamCallback {
 
   bool IsRecording() const;
 
-  float BlockingGetNextMicLevel();
+  float BlockingGetNextMicDbFS();
+
+  float CurrentMicDbFS();
 
   oboe::DataCallbackResult
   onAudioReady(oboe::AudioStream* oboeStream, void* audioData, int32_t numFrames) override;
@@ -35,6 +39,7 @@ class AudioEngine: oboe::AudioStreamCallback {
 
   // FIXME(emmanuel): can't use a blocking queue for realtime!
   BlockingQueue<float> mic_levels_{1024};
+  std::atomic<float> current_mic_level_{};
 
   /// Record mono. Stereo isn't required for the analysis.
   const int32_t input_channel_count_ = oboe::ChannelCount::Mono;
@@ -53,6 +58,8 @@ class AudioEngine: oboe::AudioStreamCallback {
   static void CloseStream(std::shared_ptr<oboe::AudioStream>& stream);
 
   static void WarnIfNotLowLatency(std::shared_ptr<oboe::AudioStream>& stream);
+
+  static float AmplitudeToDbFS(float amplitude);
 };
 
 #endif //HOT_MIC_AUDIO_ENGINE_H

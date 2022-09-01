@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.FloatRange
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -22,12 +23,14 @@ class PeakMeterView @JvmOverloads constructor(
     /**
      * The level rendered in the peak meter. Values outside the range are clamped to the range.
      */
-    @FloatRange(from = RANGE_MIN.toDouble(), to = RANGE_MAX.toDouble())
-    var level: Float = RANGE_MIN
+    @FloatRange(from = Dbfs.MIN.toDouble(), to = Dbfs.MAX.toDouble())
+    var level: Float = Dbfs.MIN
         set(value) {
             // TODO: smooth out fast updates (300 ms drop off)
-            field = max(min(value, RANGE_MAX), RANGE_MIN)
-            invalidate()
+            if (abs(value - field) >= EPSILON) {
+                field = max(min(value, Dbfs.MAX), Dbfs.MIN)
+                invalidate()
+            }
         }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -47,13 +50,12 @@ class PeakMeterView @JvmOverloads constructor(
         // Level
         //   Normalize level to find percentage of height. Also note that y is positive in the down
         //   direction.
-        val levelLine = (1 - ((level - RANGE_MIN) / (RANGE_MAX - RANGE_MIN))) * height
+        val levelLine = (1 - ((level - Dbfs.MIN) / (Dbfs.MAX - Dbfs.MIN))) * height
         canvas.drawLine(0f, levelLine, width, levelLine, paint)
         // Labels
     }
 
     companion object {
-        private const val RANGE_MIN = -32.0f
-        private const val RANGE_MAX = 3.0f
+        const val EPSILON = 0.00001f
     }
 }

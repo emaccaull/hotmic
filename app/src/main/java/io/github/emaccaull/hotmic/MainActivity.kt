@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import io.github.emaccaull.hotmic.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 import timber.log.Timber
@@ -89,8 +90,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun micLevels(): Flow<Float> {
         return flow {
-            while (currentCoroutineContext().isActive)
-                emit(AudioEngine.getInstance().nextMicLevel())
+            while (currentCoroutineContext().isActive) {
+                emit(AudioEngine.getInstance().currentMicLevel())
+                delay(16) // approx 60Hz
+            }
         }.flowOn(Dispatchers.IO)
     }
 

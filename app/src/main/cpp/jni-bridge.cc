@@ -63,7 +63,18 @@ Java_io_github_emaccaull_hotmic_AudioEngine_nextMicLevel(JNIEnv*, jobject) {
         "method");
     return 0;
   }
-  return engine->BlockingGetNextMicLevel();
+  return engine->BlockingGetNextMicDbFS();
+}
+
+JNIEXPORT jfloat JNICALL
+Java_io_github_emaccaull_hotmic_AudioEngine_currentMicLevel(JNIEnv*, jobject) {
+  if (engine == nullptr) {
+    LOGE(
+        "Engine is null, you must call createEngine before calling this "
+        "method");
+    return 0;
+  }
+  return engine->CurrentMicDbFS();
 }
 
 JNIEXPORT jboolean JNICALL
