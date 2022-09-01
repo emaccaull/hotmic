@@ -27,11 +27,12 @@ class AudioDeviceRepository(
     private val audioDeviceCallback = object : AudioDeviceCallback() {
         override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
             val current = _devices.value
-            if (current != null) {
-                _devices.value = current + addedDevices.conv()
+            val devices = if (current != null) {
+                current + addedDevices.conv()
             } else {
-                _devices.value = addedDevices.conv()
+                addedDevices.conv()
             }
+            _devices.value = devices
         }
 
         override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
@@ -63,12 +64,19 @@ class AudioDeviceRepository(
     }
 
     private fun Array<AudioDeviceInfo>.conv(): Set<AudioDevice> =
-        this.mapTo(linkedSetOf()) { info ->
-            AudioDevice(
-                info.id,
-                info.friendlyName,
-                info.isSource,
-                info.isSink
-            )
-        }
+        this
+            .sortedBy { info ->
+                when (info.type) {
+                    AudioDeviceInfo.TYPE_BUILTIN_MIC -> -1
+                    else -> info.type
+                }
+            }
+            .mapTo(linkedSetOf()) { info ->
+                AudioDevice(
+                    info.id,
+                    info.friendlyName,
+                    info.isSource,
+                    info.isSink
+                )
+            }
 }
