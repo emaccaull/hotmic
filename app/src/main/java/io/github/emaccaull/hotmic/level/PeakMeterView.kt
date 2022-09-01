@@ -26,9 +26,9 @@ class PeakMeterView @JvmOverloads constructor(
     @FloatRange(from = Dbfs.MIN.toDouble(), to = Dbfs.MAX.toDouble())
     var level: Float = Dbfs.MIN
         set(value) {
-            // TODO: smooth out fast updates (300 ms drop off)
-            if (abs(value - field) >= EPSILON) {
-                field = max(min(value, Dbfs.MAX), Dbfs.MIN)
+            val newValue = max(min(value, Dbfs.MAX), Dbfs.MIN)
+            if (abs(newValue - field) >= EPSILON) {
+                field = newValue
                 invalidate()
             }
         }
@@ -39,19 +39,24 @@ class PeakMeterView @JvmOverloads constructor(
         strokeWidth = 2f
     }
 
+    private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = Color.GREEN
+    }
+
     override fun onDraw(canvas: Canvas) {
         val height = measuredHeight.toFloat()
         val width = measuredWidth.toFloat()
+        // Level
+        //   Normalize level to find percentage of height. Also note that y is positive in the down
+        //   direction.
+        val levelLine = (1 - ((level - Dbfs.MIN) / (Dbfs.MAX - Dbfs.MIN))) * height
+        canvas.drawRect(0f, levelLine, width, height, bgPaint)
         // Border
         canvas.drawLine(0f, 0f, 0f, height, paint)
         canvas.drawLine(0f, 0f, width, 0f, paint)
         canvas.drawLine(0f, height, width, height, paint)
         canvas.drawLine(width, 0f, width, height, paint)
-        // Level
-        //   Normalize level to find percentage of height. Also note that y is positive in the down
-        //   direction.
-        val levelLine = (1 - ((level - Dbfs.MIN) / (Dbfs.MAX - Dbfs.MIN))) * height
-        canvas.drawLine(0f, levelLine, width, levelLine, paint)
         // Labels
     }
 
