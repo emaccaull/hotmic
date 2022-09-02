@@ -66,6 +66,12 @@ float AudioEngine::AmplitudeToDbFS(float amplitude) {
   return 20.0f * ::log10(::fabsf(amplitude));
 }
 
+inline int FramesIn150Millis(int32_t sample_rate) {
+  // E.g., 44100 frame per second = 44.1 frame per milli:
+  // 44.1 * 150 = 6,615
+  return int(double(sample_rate) / 1000.0 * 150);
+}
+
 /**
  * Sets the stream parameters which are specific to recording.
  *
@@ -75,12 +81,12 @@ float AudioEngine::AmplitudeToDbFS(float amplitude) {
 oboe::AudioStreamBuilder*
 AudioEngine::SetupRecordingStreamParameters(oboe::AudioStreamBuilder* builder,
                                             int32_t sample_rate) {
-  // This sample uses blocking read() because we don't specify a callback
   builder->setDataCallback(this)
       ->setErrorCallback(this)
       ->setDeviceId(recording_device_)
       ->setDirection(oboe::Direction::Input)
       ->setSampleRate(sample_rate)
+      ->setFramesPerDataCallback(FramesIn150Millis(sample_rate))
       ->setChannelCount(input_channel_count_);
   return SetupCommonStreamParameters(builder);
 }
@@ -140,17 +146,18 @@ void AudioEngine::WarnIfNotLowLatency(std::shared_ptr<oboe::AudioStream>& stream
 
 oboe::DataCallbackResult
 AudioEngine::onAudioReady(oboe::AudioStream*, void* audioData, int32_t numFrames) {
+  LOGI("frame count = %d", numFrames);
+  // Calculate Root Mean Squared (RMS) of audio signal.
+  // https://en.wikipedia.org/wiki/DBFS#RMS_levels
   auto* data = reinterpret_cast<float*>(audioData);
   auto* end = data + numFrames;
   double avg = 0;
   for (auto* p = data; p < end; p++) {
-    avg += *p;
+    float v = *p;
+    avg += v * v;
   }
-  avg /= numFrames;
-
-  auto value = float(avg);
-  current_mic_level_ = value;
-
+  avg = ::sqrt(avg / numFrames);
+  current_mic_level_ = float(avg);
   return oboe::DataCallbackResult::Continue;
 }
 

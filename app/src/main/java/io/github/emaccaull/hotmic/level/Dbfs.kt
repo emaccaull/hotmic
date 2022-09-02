@@ -1,7 +1,7 @@
 package io.github.emaccaull.hotmic.level
 
 object Dbfs {
-    const val MIN = -114.0f
-    const val MAX = 0.0f
+    const val MIN: Float = -90.0f
+    const val MAX: Float =   0.0f
     val RANGE = MIN..MAX
 }

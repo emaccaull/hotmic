@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         return flow {
             while (currentCoroutineContext().isActive) {
                 emit(AudioEngine.getInstance().currentMicLevel())
-                delay(16) // approx 60Hz
+                delay(33) // approx 30 Hz
             }
         }.flowOn(Dispatchers.IO)
     }
