@@ -1,6 +1,7 @@
 package io.github.emaccaull.hotmic.level
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -20,6 +21,8 @@ class PeakMeterView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    private var nightMode: Int = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+
     /**
      * The level rendered in the peak meter. Values outside the range are clamped to the range.
      */
@@ -35,7 +38,7 @@ class PeakMeterView @JvmOverloads constructor(
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        color = Color.BLACK
+        color = if (nightMode == Configuration.UI_MODE_NIGHT_YES) Color.WHITE else Color.BLACK
         strokeWidth = 2f
     }
 
