@@ -6,14 +6,17 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import io.github.emaccaull.hotmic.databinding.ActivityMainBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.isActive
+import io.github.emaccaull.hotmic.level.Dbfs
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
@@ -22,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var viewModel: MainViewModel
+    private var job: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AudioEngine.initialize(this)
@@ -34,9 +38,9 @@ class MainActivity : AppCompatActivity() {
 
         binding.recordButton.setOnClickListener {
             if (AudioEngine.getInstance().isRecording) {
-                AudioEngine.getInstance().stopRecording()
+                stopRecording()
             } else {
-                AudioEngine.getInstance().startRecording()
+                startRecording()
             }
             val recording = AudioEngine.getInstance().isRecording
             binding.recordButton.text =
@@ -80,12 +84,25 @@ class MainActivity : AppCompatActivity() {
             adapter.clear()
             adapter.addAll(devices)
         }
+    }
 
-        lifecycleScope.launchWhenCreated {
-            micLevels().collectLatest { level ->
-                binding.peakMeter.level = level
+    private fun startRecording() {
+        job =
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    micLevels().collectLatest { level ->
+                        binding.peakMeter.level = level
+                    }
+                }
             }
-        }
+        // TODO: pause recording when app is paused.
+        AudioEngine.getInstance().startRecording()
+    }
+
+    private fun stopRecording() {
+        job?.cancel()
+        binding.peakMeter.level = Dbfs.MIN
+        AudioEngine.getInstance().stopRecording()
     }
 
     private fun micLevels(): Flow<Float> {
