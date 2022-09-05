@@ -20,29 +20,18 @@ class PeakMeterView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private var history = ArrayDeque<Float>(WINDOW_SIZE)
-
     /**
      * The level rendered in the peak meter. Values outside the range are clamped to the range.
      */
     @FloatRange(from = Dbfs.MIN.toDouble(), to = Dbfs.MAX.toDouble())
     var level: Float = Dbfs.MIN
         set(value) {
-            val avg = averageMicLevel(value)
-            val clamped = max(min(avg, Dbfs.MAX), Dbfs.MIN)
+            val clamped = max(min(value, Dbfs.MAX), Dbfs.MIN)
             if (abs(clamped - field) >= EPSILON) {
                 field = clamped
                 invalidate()
             }
         }
-
-    private fun averageMicLevel(nextValue: Float): Float {
-        if (history.size == WINDOW_SIZE) {
-            history.removeFirst()
-        }
-        history.addLast(nextValue)
-        return history.average().toFloat()
-    }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -73,6 +62,5 @@ class PeakMeterView @JvmOverloads constructor(
 
     companion object {
         private const val EPSILON = 0.00001f
-        private const val WINDOW_SIZE = 5
     }
 }

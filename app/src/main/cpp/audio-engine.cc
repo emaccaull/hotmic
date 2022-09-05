@@ -7,20 +7,18 @@
 #include <oboe/Oboe.h>
 #include <cmath>
 
-AudioEngine::AudioEngine() {
-  if (!current_mic_level_.is_lock_free()) {
-    LOGW("std::atomic is not lock free");
-  }
-}
-
 AudioEngine::~AudioEngine() {
-  if (recording_) {
-    StopRecording();
-  }
+  StopRecording();
 }
 
 void AudioEngine::SetRecordingDeviceId(int device_id) {
   recording_device_ = device_id;
+}
+
+inline int FramesInMillis(int32_t sample_rate, long milliseconds) {
+  // E.g., 44100 frame per second = 44.1 frame per milli:
+  // 44.1 * 150 = 6,615
+  return int(double(sample_rate) / 1000.0 * milliseconds);
 }
 
 bool AudioEngine::StartRecording() {
@@ -37,16 +35,18 @@ bool AudioEngine::StartRecording() {
     return false;
   }
   WarnIfNotLowLatency(input_stream_);
-//    // Determine maximum size that could possibly be called.
-//    int32_t bufferSize = input_stream_->getBufferCapacityInFrames()
-//                         * input_stream_->getChannelCount();
-  return (recording_ = input_stream_->requestStart() == oboe::Result::OK);
+  recording_ = input_stream_->requestStart() == oboe::Result::OK;
+  if (recording_) {
+    frame_buffer_ = new RingBuffer<float>(FramesInMillis(input_stream_->getSampleRate(), 300));
+  }
+  return recording_;
 }
 
 void AudioEngine::StopRecording() {
   if (recording_) {
     recording_ = false;
-    current_mic_level_ = 0;
+    delete frame_buffer_;
+    frame_buffer_ = nullptr;
     CloseStream(input_stream_);
   }
 }
@@ -56,7 +56,22 @@ bool AudioEngine::IsRecording() const {
 }
 
 float AudioEngine::CurrentMicDbFS() {
-  return AmplitudeToDbFS(current_mic_level_);
+  float amplitude = 0;
+  if (frame_buffer_) {
+    // Calculate Root Mean Squared (RMS) of audio signal.
+    // https://en.wikipedia.org/wiki/DBFS#RMS_levels
+    //
+    // NOTE: this reading the buffer runs on a different thread than writing the buffer. Access is
+    // not currently thread-safe.
+    double sum_squares = 0;
+    size_t len = frame_buffer_->Size();
+    for (size_t i = 0; i < len; ++i) {
+      float f = (*frame_buffer_)[i];
+      sum_squares += f * f;
+    }
+    amplitude = float(::sqrt(sum_squares / len));
+  }
+  return AmplitudeToDbFS(amplitude);
 }
 
 float AudioEngine::AmplitudeToDbFS(float amplitude) {
@@ -64,12 +79,6 @@ float AudioEngine::AmplitudeToDbFS(float amplitude) {
     return -114.0f; // digital noise floor.
   }
   return 20.0f * ::log10(::fabsf(amplitude));
-}
-
-inline int FramesIn150Millis(int32_t sample_rate) {
-  // E.g., 44100 frame per second = 44.1 frame per milli:
-  // 44.1 * 150 = 6,615
-  return int(double(sample_rate) / 1000.0 * 150);
 }
 
 /**
@@ -86,7 +95,6 @@ AudioEngine::SetupRecordingStreamParameters(oboe::AudioStreamBuilder* builder,
       ->setDeviceId(recording_device_)
       ->setDirection(oboe::Direction::Input)
       ->setSampleRate(sample_rate)
-      ->setFramesPerDataCallback(FramesIn150Millis(sample_rate))
       ->setChannelCount(input_channel_count_);
   return SetupCommonStreamParameters(builder);
 }
@@ -146,18 +154,12 @@ void AudioEngine::WarnIfNotLowLatency(std::shared_ptr<oboe::AudioStream>& stream
 
 oboe::DataCallbackResult
 AudioEngine::onAudioReady(oboe::AudioStream*, void* audioData, int32_t numFrames) {
-  LOGI("frame count = %d", numFrames);
-  // Calculate Root Mean Squared (RMS) of audio signal.
-  // https://en.wikipedia.org/wiki/DBFS#RMS_levels
+  assert(frame_buffer_ != nullptr);
   auto* data = reinterpret_cast<float*>(audioData);
   auto* end = data + numFrames;
-  double avg = 0;
   for (auto* p = data; p < end; p++) {
-    float v = *p;
-    avg += v * v;
+    frame_buffer_->PushBack(*p);
   }
-  avg = ::sqrt(avg / numFrames);
-  current_mic_level_ = float(avg);
   return oboe::DataCallbackResult::Continue;
 }
 

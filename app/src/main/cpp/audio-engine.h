@@ -5,12 +5,11 @@
 #ifndef HOT_MIC_AUDIO_ENGINE_H
 #define HOT_MIC_AUDIO_ENGINE_H
 
+#include "ringbuffer.h"
 #include <oboe/Oboe.h>
-#include <atomic>
 
 class AudioEngine: oboe::AudioStreamCallback {
  public:
-  AudioEngine();
   ~AudioEngine();
 
   void SetRecordingDeviceId(int device_id);
@@ -34,7 +33,8 @@ class AudioEngine: oboe::AudioStreamCallback {
   static constexpr oboe::AudioFormat kAudioFormat = oboe::AudioFormat::Float;
   static constexpr int32_t kPreferredSampleRateHz = 44100;
 
-  std::atomic<float> current_mic_level_{};
+  /// The last 300 milliseconds of mic samples.
+  RingBuffer<float>* frame_buffer_ = nullptr;
 
   /// Record mono. Stereo isn't required for the analysis.
   const int32_t input_channel_count_ = oboe::ChannelCount::Mono;
