@@ -37,7 +37,7 @@ bool AudioEngine::StartRecording() {
   WarnIfNotLowLatency(input_stream_);
   recording_ = input_stream_->requestStart() == oboe::Result::OK;
   if (recording_) {
-    frame_buffer_ = new RingBuffer<float>(FramesInMillis(input_stream_->getSampleRate(), 300));
+    frame_buffer_ = new RingBuffer<double>(FramesInMillis(input_stream_->getSampleRate(), 300));
   }
   return recording_;
 }
@@ -66,8 +66,7 @@ float AudioEngine::CurrentMicDbFS() {
     double sum_squares = 0;
     size_t len = frame_buffer_->Size();
     for (size_t i = 0; i < len; ++i) {
-      float f = (*frame_buffer_)[i];
-      sum_squares += f * f;
+      sum_squares += (*frame_buffer_)[i];
     }
     amplitude = float(::sqrt(sum_squares / len));
   }
@@ -158,7 +157,8 @@ AudioEngine::onAudioReady(oboe::AudioStream*, void* audioData, int32_t numFrames
   auto* data = reinterpret_cast<float*>(audioData);
   auto* end = data + numFrames;
   for (auto* p = data; p < end; p++) {
-    frame_buffer_->PushBack(*p);
+    double value = *p;
+    frame_buffer_->PushBack(value * value);
   }
   return oboe::DataCallbackResult::Continue;
 }

@@ -33,8 +33,8 @@ class AudioEngine: oboe::AudioStreamCallback {
   static constexpr oboe::AudioFormat kAudioFormat = oboe::AudioFormat::Float;
   static constexpr int32_t kPreferredSampleRateHz = 44100;
 
-  /// The last 300 milliseconds of mic samples.
-  RingBuffer<float>* frame_buffer_ = nullptr;
+  /// The last 300 milliseconds of squared mic samples.
+  RingBuffer<double>* frame_buffer_ = nullptr;
 
   /// Record mono. Stereo isn't required for the analysis.
   const int32_t input_channel_count_ = oboe::ChannelCount::Mono;
