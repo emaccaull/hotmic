@@ -2,9 +2,9 @@ package io.github.emaccaull.hotmic
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -96,14 +96,18 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-        // TODO: pause recording when app is paused.
-        AudioEngine.getInstance().startRecording()
+        if (AudioEngine.getInstance().startRecording()) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
 
     private fun stopRecording() {
         job?.cancel()
         binding.peakMeter.level = Dbfs.MIN
-        AudioEngine.getInstance().stopRecording()
+        // TODO: pause recording when app is paused.
+        if (AudioEngine.getInstance().stopRecording()) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
 
     private fun micLevels(): Flow<Float> {
