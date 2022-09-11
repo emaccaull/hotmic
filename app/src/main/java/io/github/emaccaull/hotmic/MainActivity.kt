@@ -6,11 +6,12 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.widget.AdapterView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import dagger.hilt.android.AndroidEntryPoint
 import io.github.emaccaull.hotmic.databinding.ActivityMainBinding
 import io.github.emaccaull.hotmic.level.Dbfs
 import kotlinx.coroutines.*
@@ -20,12 +21,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import timber.log.Timber
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val binding: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    private lateinit var viewModel: MainViewModel
+    private val viewModel by viewModels<MainViewModel>()
     private var job: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,7 +82,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         viewModel.getAudioDevices(AudioSourceFilter.INPUT).observe(this) { devices ->
             adapter.clear()
             adapter.addAll(devices)

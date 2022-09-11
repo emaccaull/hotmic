@@ -8,7 +8,6 @@ add_library(
         # Need a .so to link to JVM at runtime.
         SHARED
         src/main/cpp/audio-engine.h src/main/cpp/audio-engine.cc
-        src/main/cpp/blocking-queue.h
         src/main/cpp/jni-bridge.cc
         src/main/cpp/logging_macros.h
 )

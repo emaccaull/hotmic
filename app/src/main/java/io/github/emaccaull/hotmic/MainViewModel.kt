@@ -1,14 +1,21 @@
 package io.github.emaccaull.hotmic
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
-    private val audioDeviceRepository = AudioDeviceRepository(application)
+data class ViewState(
+    val deviceDropDownEnabled: Boolean = true,
+    val listening: Boolean = false
+)
+
+@HiltViewModel
+class MainViewModel @Inject constructor(private val audioDeviceRepository: AudioDeviceRepository) :
+    ViewModel() {
+
+    private val _viewState = MutableLiveData(ViewState())
+    val viewState: LiveData<ViewState> get() = _viewState
 
     fun getAudioDevices(audioDeviceType: AudioSourceFilter): LiveData<Set<AudioDevice>> {
         viewModelScope.launch {
