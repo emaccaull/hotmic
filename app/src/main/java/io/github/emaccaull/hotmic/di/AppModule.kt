@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.emaccaull.hotmic.AudioDeviceRepository
+import io.github.emaccaull.hotmic.DefaultAudioDeviceRepository
 import javax.inject.Singleton
 
 @Module
@@ -16,6 +17,6 @@ class AppModule {
     @Provides
     @Singleton
     fun provideAudioDeviceRepository(@ApplicationContext context: Context): AudioDeviceRepository {
-        return AudioDeviceRepository(context)
+        return DefaultAudioDeviceRepository(context)
     }
 }

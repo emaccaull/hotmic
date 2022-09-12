@@ -1,8 +1,10 @@
 package io.github.emaccaull.hotmic
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ViewState(
@@ -18,21 +20,14 @@ class MainViewModel @Inject constructor(private val audioDeviceRepository: Audio
     val viewState: LiveData<ViewState> get() = _viewState
 
     fun getAudioDevices(audioDeviceType: AudioSourceFilter): LiveData<Set<AudioDevice>> {
-        viewModelScope.launch {
-            audioDeviceRepository.refresh()
-        }
         return audioDeviceRepository.devices.map { devices ->
             devices.filter { d ->
                 when (audioDeviceType) {
                     AudioSourceFilter.INPUT -> d.isSource
-                    AudioSourceFilter.OUTPUT -> d.isSink
+                    AudioSourceFilter.OUTPUT -> !d.isSource
                     AudioSourceFilter.ANY -> true
                 }
             }.toSet()
         }
-    }
-
-    override fun onCleared() {
-        audioDeviceRepository.disconnect()
     }
 }
