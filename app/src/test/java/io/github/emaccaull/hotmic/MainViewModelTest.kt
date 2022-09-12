@@ -1,23 +1,27 @@
 package io.github.emaccaull.hotmic
 
 import androidx.lifecycle.Observer
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.hasItem
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @ExtendWith(InstantTaskExecutorExtension::class)
 internal class MainViewModelTest {
 
     private val audioDeviceRepository: AudioDeviceRepository = FakeAudioDeviceRepository(
         AudioDevice(1, "Mic", true),
-        AudioDevice(2, "Phone", true)
+        AudioDevice(2, "Speaker", false)
     )
 
+    private val viewModel = MainViewModel(audioDeviceRepository)
+
     @Test
-    fun shouldEmitMicLevelsWhenListening() {
+    fun shouldListAudioDevices() {
         // Given
-        val viewModel = MainViewModel(audioDeviceRepository)
         val observer = DeviceObserver()
 
         // When
@@ -25,6 +29,13 @@ internal class MainViewModelTest {
 
         // Then
         assertThat(observer.latestDevices, hasItem(AudioDevice(1, "Mic", true)))
+        assertThat(observer.latestDevices, hasItem(AudioDevice(2, "Speaker", false)))
+    }
+
+    @Test
+    fun shouldEmitMicLevelsWhenListening() = runTest {
+//        viewModel.startListening()
+
     }
 
     class DeviceObserver : Observer<Collection<AudioDevice>> {
