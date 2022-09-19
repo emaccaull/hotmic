@@ -14,7 +14,8 @@ import javax.inject.Inject
 
 data class ViewState(
     val deviceDropDownEnabled: Boolean = true,
-    val listening: Boolean = false
+    val listening: Boolean = false,
+    val recordButtonText: Int = R.string.record_start
 )
 
 @HiltViewModel
@@ -39,17 +40,33 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun toggleListeningForDevice(deviceId: Int): Boolean {
+        return if (audioEngine.isRecording) {
+            stopListening()
+        } else {
+            startListening(deviceId)
+        }
+    }
+
     fun startListening(deviceId: Int): Boolean {
         val state = _viewState.value!!
         val listening = audioEngine.startRecording(deviceId)
-        _viewState.value = state.copy(deviceDropDownEnabled = !listening, listening = listening)
+        _viewState.value = state.copy(
+            deviceDropDownEnabled = !listening,
+            listening = listening,
+            recordButtonText = if (listening) R.string.record_stop else R.string.record_start
+        )
         return listening
     }
 
     fun stopListening(): Boolean {
         val state = _viewState.value!!
         val stopped = audioEngine.stopRecording()
-        _viewState.value = state.copy(deviceDropDownEnabled = stopped, listening = !stopped)
+        _viewState.value = state.copy(
+            deviceDropDownEnabled = stopped,
+            listening = !stopped,
+            recordButtonText = if (stopped) R.string.record_start else R.string.record_stop
+        )
         return stopped
     }
 

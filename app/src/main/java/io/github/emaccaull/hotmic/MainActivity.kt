@@ -37,19 +37,10 @@ class MainActivity : AppCompatActivity() {
         binding.audioDeviceSpinner.isEnabled = !AudioEngine.getInstance().isRecording
 
         binding.recordButton.setOnClickListener {
-            if (AudioEngine.getInstance().isRecording) {
-                stopRecording()
-            } else {
-                startRecording()
+            val device = binding.audioDeviceSpinner.selectedItem as AudioDevice?
+            if (device != null) {
+                viewModel.toggleListeningForDevice(device.id)
             }
-            val recording = AudioEngine.getInstance().isRecording
-            binding.recordButton.text =
-                if (recording) {
-                    getString(R.string.record_stop)
-                } else {
-                    getString(R.string.record_start)
-                }
-            binding.audioDeviceSpinner.isEnabled = !recording
         }
 
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -70,16 +61,18 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.viewState.observe(this) { viewState ->
             binding.audioDeviceSpinner.isEnabled = viewState.deviceDropDownEnabled
+            binding.recordButton.text = getString(viewState.recordButtonText)
 
             if (viewState.listening) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                onStartedListening()
             } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                onStoppedListening()
             }
         }
     }
 
-    private fun startRecording() {
+    private fun onStartedListening() {
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         job =
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -90,13 +83,13 @@ class MainActivity : AppCompatActivity() {
                         }
                 }
             }
-        val device = binding.audioDeviceSpinner.selectedItem as AudioDevice
-        viewModel.startListening(device.id)
     }
 
-    private fun stopRecording() {
-        job?.cancel()
-        viewModel.stopListening()
+    private fun onStoppedListening() {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        val currentJob = job
+        job = null
+        currentJob?.cancel()
     }
 
     override fun onDestroy() {
