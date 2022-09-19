@@ -3,9 +3,7 @@ package io.github.emaccaull.hotmic
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.View
 import android.view.WindowManager
-import android.widget.AdapterView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -64,22 +62,6 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = AudioDeviceArrayAdapter(this)
         binding.audioDeviceSpinner.adapter = adapter
-        binding.audioDeviceSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val device = binding.audioDeviceSpinner.selectedItem as AudioDevice
-                Timber.d("Selected audio input %s", device.name)
-                AudioEngine.getInstance().setRecordingDeviceId(device.id)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Nothing to do
-            }
-        }
 
         viewModel.getAudioDevices(AudioSourceFilter.INPUT).observe(this) { devices ->
             adapter.clear()
@@ -108,7 +90,8 @@ class MainActivity : AppCompatActivity() {
                         }
                 }
             }
-        viewModel.startListening()
+        val device = binding.audioDeviceSpinner.selectedItem as AudioDevice
+        viewModel.startListening(device.id)
     }
 
     private fun stopRecording() {

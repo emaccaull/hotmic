@@ -21,14 +21,15 @@ Java_io_github_emaccaull_hotmic_AudioEngine_setup(JNIEnv*, jobject) {
 
 JNIEXPORT jboolean JNICALL
 Java_io_github_emaccaull_hotmic_AudioEngine_startRecording(JNIEnv*,
-                                                           jobject) {
+                                                           jobject,
+                                                           jint deviceId) {
   if (engine == nullptr) {
     LOGE(
         "Engine is null, you must call createEngine before calling this "
         "method");
     return JNI_FALSE;
   }
-  return engine->StartRecording();
+  return engine->StartRecording(deviceId);
 }
 
 JNIEXPORT jboolean JNICALL
@@ -71,20 +72,6 @@ Java_io_github_emaccaull_hotmic_AudioEngine_shutdown(JNIEnv*, jobject) {
   delete engine;
   engine = nullptr;
   LOGI("AudioEngine stopped");
-  return JNI_TRUE;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_io_github_emaccaull_hotmic_AudioEngine_setRecordingDeviceId(JNIEnv*,
-                                                                 jobject,
-                                                                 int device_id) {
-  if (engine == nullptr) {
-    LOGE(
-        "Engine is null, you must call createEngine before calling this "
-        "method");
-    return JNI_FALSE;
-  }
-  engine->SetRecordingDeviceId(device_id);
   return JNI_TRUE;
 }
 

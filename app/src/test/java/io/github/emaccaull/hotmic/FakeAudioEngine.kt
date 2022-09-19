@@ -9,7 +9,7 @@ class FakeAudioEngine(val micLevels: List<Float>) : IAudioEngine {
         recording = false
     }
 
-    override fun startRecording(): Boolean {
+    override fun startRecording(deviceId: Int): Boolean {
         recording = true
         return true
     }
@@ -25,9 +25,5 @@ class FakeAudioEngine(val micLevels: List<Float>) : IAudioEngine {
 
     override fun currentMicLevel(): Float {
         return if (micLevelsIndex >= micLevels.size) 0.0f else micLevels[micLevelsIndex++]
-    }
-
-    override fun setRecordingDeviceId(recordingDeviceId: Int): Boolean {
-        return true
     }
 }

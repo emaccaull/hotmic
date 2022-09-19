@@ -11,24 +11,25 @@ AudioEngine::~AudioEngine() {
   StopRecording();
 }
 
-void AudioEngine::SetRecordingDeviceId(int device_id) {
-  recording_device_ = device_id;
-}
-
 inline int FramesInMillis(int32_t sample_rate, long milliseconds) {
   // E.g., 44100 frame per second = 44.1 frame per milli:
   // 44.1 * 150 = 6,615
   return int(double(sample_rate) / 1000.0 * milliseconds);
 }
 
-bool AudioEngine::StartRecording() {
+bool AudioEngine::StartRecording(int32_t recording_device_id) {
   if (recording_) {
-    LOGW("Already recording");
-    return true;
+    if (recording_device_ == recording_device_id) {
+      LOGW("Already recording from %d", recording_device_id);
+      return true;
+    } else {
+      StopRecording();
+    }
   }
+  recording_device_ = recording_device_id;
   // Open the stream and start recording.
   oboe::AudioStreamBuilder in_builder;
-  SetupRecordingStreamParameters(&in_builder);
+  SetupRecordingStreamParameters(&in_builder, recording_device_id);
   oboe::Result result = in_builder.openStream(input_stream_);
   if (result != oboe::Result::OK) {
     LOGE("Failed to open input stream. Error %s", oboe::convertToText(result));
@@ -88,10 +89,11 @@ float AudioEngine::AmplitudeToDbFS(float amplitude) {
  */
 oboe::AudioStreamBuilder*
 AudioEngine::SetupRecordingStreamParameters(oboe::AudioStreamBuilder* builder,
+                                            int32_t recording_device,
                                             int32_t sample_rate) {
   builder->setDataCallback(this)
       ->setErrorCallback(this)
-      ->setDeviceId(recording_device_)
+      ->setDeviceId(recording_device)
       ->setDirection(oboe::Direction::Input)
       ->setSampleRate(sample_rate)
       ->setChannelCount(input_channel_count_);

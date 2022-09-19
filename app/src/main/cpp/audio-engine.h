@@ -12,9 +12,7 @@ class AudioEngine: oboe::AudioStreamCallback {
  public:
   ~AudioEngine();
 
-  void SetRecordingDeviceId(int device_id);
-
-  bool StartRecording();
+  bool StartRecording(int32_t recording_device_id);
 
   void StopRecording();
 
@@ -45,6 +43,7 @@ class AudioEngine: oboe::AudioStreamCallback {
 
   oboe::AudioStreamBuilder*
   SetupRecordingStreamParameters(oboe::AudioStreamBuilder* builder,
+                                 int32_t recording_device,
                                  int32_t sample_rate = kPreferredSampleRateHz);
 
   static oboe::AudioStreamBuilder*

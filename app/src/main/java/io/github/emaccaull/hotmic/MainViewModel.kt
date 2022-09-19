@@ -39,9 +39,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun startListening(): Boolean {
+    fun startListening(deviceId: Int): Boolean {
         val state = _viewState.value!!
-        val listening = audioEngine.startRecording()
+        val listening = audioEngine.startRecording(deviceId)
         _viewState.value = state.copy(deviceDropDownEnabled = !listening, listening = listening)
         return listening
     }

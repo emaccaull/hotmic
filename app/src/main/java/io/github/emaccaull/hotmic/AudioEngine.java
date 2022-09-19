@@ -52,7 +52,7 @@ public class AudioEngine implements IAudioEngine {
     }
 
     @Override
-    public native boolean startRecording();
+    public native boolean startRecording(int deviceId);
 
     @Override
     public native boolean stopRecording();
@@ -70,9 +70,6 @@ public class AudioEngine implements IAudioEngine {
      */
     @Override
     public native float currentMicLevel();
-
-    @Override
-    public native boolean setRecordingDeviceId(int recordingDeviceId);
 
     private native boolean setup();
 
