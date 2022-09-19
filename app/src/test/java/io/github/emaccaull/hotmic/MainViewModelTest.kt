@@ -40,7 +40,9 @@ internal class MainViewModelTest {
         val observer = ItemObserver<ViewState>()
         viewModel.viewState.observeForever(observer)
 
-        val inputLevel = viewModel.listenToMicInput().take(1).last()
+        viewModel.startListening(1)
+
+        val inputLevel = viewModel.pollMicInput().take(1).last()
         assertThat(inputLevel, `is`(0.3f))
 
         assertThat(observer.latest?.listening, `is`(true))
