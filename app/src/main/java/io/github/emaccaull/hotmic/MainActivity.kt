@@ -14,11 +14,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.emaccaull.hotmic.databinding.ActivityMainBinding
 import io.github.emaccaull.hotmic.level.Dbfs
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -86,38 +85,35 @@ class MainActivity : AppCompatActivity() {
             adapter.clear()
             adapter.addAll(devices)
         }
+
+        viewModel.viewState.observe(this) { viewState ->
+            binding.audioDeviceSpinner.isEnabled = viewState.deviceDropDownEnabled
+
+            if (viewState.listening) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
     }
 
     private fun startRecording() {
         job =
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    micLevels().collectLatest { level ->
-                        binding.peakMeter.level = level
-                    }
+                    viewModel.pollMicInput()
+                        .onCompletion { binding.peakMeter.level = Dbfs.MIN }
+                        .collectLatest { level ->
+                            binding.peakMeter.level = level
+                        }
                 }
             }
-        if (AudioEngine.getInstance().startRecording()) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }
+        viewModel.startListening()
     }
 
     private fun stopRecording() {
         job?.cancel()
-        binding.peakMeter.level = Dbfs.MIN
-        // TODO: pause recording when app is paused.
-        if (AudioEngine.getInstance().stopRecording()) {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }
-    }
-
-    private fun micLevels(): Flow<Float> {
-        return flow {
-            while (currentCoroutineContext().isActive) {
-                emit(AudioEngine.getInstance().currentMicLevel())
-                delay(33) // approx 30 Hz
-            }
-        }.flowOn(Dispatchers.IO)
+        viewModel.stopListening()
     }
 
     override fun onDestroy() {

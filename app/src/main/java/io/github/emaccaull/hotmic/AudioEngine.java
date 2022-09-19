@@ -5,7 +5,7 @@ import android.media.AudioManager;
 
 import androidx.annotation.WorkerThread;
 
-public class AudioEngine implements AutoCloseable {
+public class AudioEngine implements IAudioEngine {
     static {
         System.loadLibrary("audiongn");
     }
@@ -51,10 +51,13 @@ public class AudioEngine implements AutoCloseable {
         }
     }
 
+    @Override
     public native boolean startRecording();
 
+    @Override
     public native boolean stopRecording();
 
+    @Override
     public native boolean isRecording();
 
     /**
@@ -65,8 +68,10 @@ public class AudioEngine implements AutoCloseable {
      *
      * @return mic level in dBFS (decibels full scale).
      */
+    @Override
     public native float currentMicLevel();
 
+    @Override
     public native boolean setRecordingDeviceId(int recordingDeviceId);
 
     private native boolean setup();
