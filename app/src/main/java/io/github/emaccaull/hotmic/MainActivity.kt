@@ -55,8 +55,10 @@ class MainActivity : AppCompatActivity() {
         binding.audioDeviceSpinner.adapter = adapter
 
         viewModel.getAudioDevices(AudioSourceFilter.INPUT).observe(this) { devices ->
+            adapter.setNotifyOnChange(false)
             adapter.clear()
             adapter.addAll(devices)
+            adapter.notifyDataSetChanged()
         }
 
         viewModel.viewState.observe(this) { viewState ->
