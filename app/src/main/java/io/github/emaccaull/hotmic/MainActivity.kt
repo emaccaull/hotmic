@@ -28,11 +28,10 @@ class MainActivity : AppCompatActivity() {
     private var job: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        AudioEngine.initialize(this)
-
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        logFeatures()
+
+        AudioEngine.initialize(this)
 
         binding.audioDeviceSpinner.isEnabled = !AudioEngine.getInstance().isRecording
 
@@ -97,15 +96,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         AudioEngine.getInstance().close()
         super.onDestroy()
-    }
-
-    private fun logFeatures() {
-        val hasLowLatencyFeature: Boolean =
-            packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_LOW_LATENCY)
-        val hasProFeature: Boolean =
-            packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO)
-        Timber.d("Has low latency audio (sub 45ms)? %b", hasLowLatencyFeature)
-        Timber.d("Has pro audio (sub 20ms)? %b", hasProFeature)
     }
 
     companion object {
