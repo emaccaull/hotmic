@@ -26,6 +26,11 @@ class MainActivity : AppCompatActivity() {
     private val viewModel by viewModels<MainViewModel>()
     private var job: Job? = null
 
+    // FIXME: need to attribute the app image asset
+    //   In the credits, (say hamburger, then about), need to
+    //   - list open source licenses
+    //   - state Microphone image assets "designed by Freepik from Flaticon"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
