@@ -15,6 +15,7 @@ import javax.inject.Inject
 data class ViewState(
     val deviceDropDownEnabled: Boolean = true,
     val listening: Boolean = false,
+    val audioDevice: Int = -1,
     val recordButtonText: Int = R.string.record_start
 )
 
@@ -25,7 +26,20 @@ class MainViewModel @Inject constructor(
     @IODispatcher private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
-    private val _viewState = MutableLiveData(ViewState())
+    private val _viewState = object : MutableLiveData<ViewState>(ViewState()) {
+        override fun onActive() {
+            super.onActive()
+            val viewState = value!!
+            if (viewState.listening) {
+                audioEngine.startRecording(viewState.audioDevice)
+            }
+        }
+        override fun onInactive() {
+            super.onInactive()
+            audioEngine.stopRecording()
+        }
+    }
+
     val viewState: LiveData<ViewState> get() = _viewState
 
     fun getAudioDevices(audioDeviceType: AudioSourceFilter): LiveData<Set<AudioDevice>> {
@@ -54,6 +68,7 @@ class MainViewModel @Inject constructor(
         _viewState.value = state.copy(
             deviceDropDownEnabled = !listening,
             listening = listening,
+            audioDevice = deviceId,
             recordButtonText = if (listening) R.string.record_stop else R.string.record_start
         )
         return listening
@@ -65,6 +80,7 @@ class MainViewModel @Inject constructor(
         _viewState.value = state.copy(
             deviceDropDownEnabled = stopped,
             listening = !stopped,
+            audioDevice = -1,
             recordButtonText = if (stopped) R.string.record_start else R.string.record_stop
         )
         return stopped

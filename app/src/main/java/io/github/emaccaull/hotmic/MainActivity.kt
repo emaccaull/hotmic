@@ -16,7 +16,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -54,10 +53,12 @@ class MainActivity : AppCompatActivity() {
         binding.audioDeviceSpinner.adapter = adapter
 
         viewModel.getAudioDevices(AudioSourceFilter.INPUT).observe(this) { devices ->
-            adapter.setNotifyOnChange(false)
-            adapter.clear()
-            adapter.addAll(devices)
-            adapter.notifyDataSetChanged()
+            adapter.apply {
+                setNotifyOnChange(false)
+                clear()
+                addAll(devices)
+                notifyDataSetChanged()
+            }
         }
 
         viewModel.viewState.observe(this) { viewState ->
