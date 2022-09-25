@@ -5,6 +5,6 @@
     <string name="audio_source_title">Audio Source:</string>
     <string name="record_start">Start listening</string>
     <string name="record_stop">Stop listening</string>
-    <string name="welcome_to_hot_mic">Press record to see what your microphone hears</string>
+    <string name="welcome_to_hot_mic">Press start to see what your microphone hears</string>
     <string name="disclaimer_message">Your audio data is never stored anywhere</string>
 </resources>
