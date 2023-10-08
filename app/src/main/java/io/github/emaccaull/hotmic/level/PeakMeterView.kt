@@ -4,7 +4,10 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.FloatRange
@@ -42,9 +45,24 @@ class PeakMeterView @JvmOverloads constructor(
         strokeWidth = 2f
     }
 
+    private val gradient = LinearGradient(
+        0f,
+        1f,
+        0f,
+        0f,
+        intArrayOf(Color.GREEN, Color.YELLOW, Color.RED),
+        floatArrayOf(0f, 0.7f, 0.98f),
+        Shader.TileMode.CLAMP
+    )
     private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        color = Color.GREEN
+        shader = gradient
+    }
+    private val matrix = Matrix()
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        matrix.setScale(1f, measuredHeight.toFloat())
+        gradient.setLocalMatrix(matrix)
     }
 
     override fun onDraw(canvas: Canvas) {
